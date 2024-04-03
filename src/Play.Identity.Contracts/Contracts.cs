@@ -1,5 +1,7 @@
 ﻿namespace Play.Identity.Contracts;
 
+using System;
+
 /// <summary>
 /// Event that Debits Gil accordingly to the the user
 /// </summary>
