@@ -1,9 +1,12 @@
 using System;
+using System.IO;
+using System.Reflection;
 using AspNetCore.Identity.MongoDbCore.Infrastructure;
 using GreenPipes;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -72,6 +75,10 @@ public class Startup
                 options.Events.RaiseSuccessEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseErrorEvents = true;
+
+                // This is required in the Docker environment since the strict linux permissions you'll set
+                // there won't allow IdentityServer to creaet keys in the default /keys directory.
+                options.KeyManagement.KeyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             })
             .AddAspNetIdentity<ApplicationUser>()
             .AddInMemoryApiScopes(identityServiceSettings.ApiScopes)
@@ -121,6 +128,11 @@ public class Startup
         app.UseIdentityServer();
 
         app.UseAuthorization();
+
+        app.UseCookiePolicy(new CookiePolicyOptions
+        {
+            MinimumSameSitePolicy = SameSiteMode.Lax
+        });
 
         app.UseEndpoints(endpoints =>
         {
