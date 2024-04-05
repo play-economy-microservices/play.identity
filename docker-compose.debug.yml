@@ -1,0 +1,18 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+version: '3.4'
+
+services:
+  playidentityservice:
+    image: playidentityservice
+    build:
+      context: .
+      dockerfile: src/Play.Identity.Service/Dockerfile
+      args:
+        - configuration=Debug
+    ports:
+      - 5002:5002
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
