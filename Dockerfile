@@ -14,7 +14,7 @@ COPY ["src/Play.Identity.Contracts/Play.Identity.Contracts.csproj", "src/Play.Id
 COPY ["src/Play.Identity.Service/Play.Identity.Service.csproj", "src/Play.Identity.Service/"]
 
 RUN --mount=type=secret,id=GH_OWNER,dst=/GH_OWNER --mount=type=secret,id=GH_PAT,dst=/GH_PAT \ 
-    dotnet nuget add source --username USERNAME --password `cat /GH_PAT` --store-password-in-clear-text --name github "https://nuget.pkg.github.com/`cat GH_OWNER`/index.json"
+    dotnet nuget add source --username USERNAME --password `cat /GH_PAT` --store-password-in-clear-text --name github "https://nuget.pkg.github.com/`cat /GH_OWNER`/index.json"
 
 RUN dotnet restore "src/Play.Identity.Service/Play.Identity.Service.csproj"
 COPY ./src ./src
