@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using AspNetCore.Identity.MongoDbCore.Infrastructure;
 using GreenPipes;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
@@ -60,7 +59,7 @@ public class Startup
             );
 
         // Register Rabbit MQ to consume messages
-        services.AddMassTransitWithRabbitMq(retryConfigurator =>
+        services.AddMassTransitWithMessageBroker(Configuration, retryConfigurator =>
         {
             retryConfigurator.Interval(3, TimeSpan.FromSeconds(5));
             retryConfigurator.Ignore(typeof(UnknownUserException));
