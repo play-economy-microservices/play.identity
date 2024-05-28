@@ -16,7 +16,8 @@ dotnet nuget push ../packages/Play.Identity.Contracts.$version.nupkg --api-key $
 ```powershell
 $env:GH_OWNER="play-economy-microservices"
 $env:GH_PAT="[PAT HERE]"
-docker build --secret id=GH_OWNER --secret id=GH_PAT -t play.identity:$version .
+$appname="playeconomycontainerregistry"
+docker build --secret id=GH_OWNER --secret id=GH_PAT -t "$appname.azurecr.io/play.identity:$version" .
 ```
 
 ## Run the docker image
@@ -28,4 +29,13 @@ docker run -it --rm -p 5002:5002 --name identity -e
 MongoDbSettings__ConnectionString=$cosmosDbConnString -e 
 ServiceBusSettings__ConnectionString=$serviceBusConnString -e 
 ServiceSettings__MessageBroker="SERVICEBUS" -e IdentitySettings__AdminUserPassword=$adminPass play.identity:$version
+```
+
+## Creating the Container Registry & Publishing Docker Image 
+```powershell
+$appname="playeconomycontainerregistry"
+$version="1.0.3"
+az acr login --name $appname 
+docker tag play.identity:$version "$appname.azurecr.io/play.identity:$version"
+docker push "playeconomycontainerregistry.azurecr.io/play.identity:$version"
 ```
