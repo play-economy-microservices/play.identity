@@ -31,7 +31,7 @@ ServiceBusSettings__ConnectionString=$serviceBusConnString -e
 ServiceSettings__MessageBroker="SERVICEBUS" -e IdentitySettings__AdminUserPassword=$adminPass play.identity:$version
 ```
 
-## Creating the Container Registry & Publishing Docker Image 
+## Publishing Docker Image 
 ```powershell
 $appname="playeconomycontainerregistry"
 $version="1.0.3"
