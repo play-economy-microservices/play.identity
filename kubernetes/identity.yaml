@@ -13,8 +13,10 @@ spec:
     spec:
       containers:
         - name: identity
-          image: playeconomycontainerregistry.azurecr.io/play.identity:1.0.3
+          image: playeconomycontainerregistry.azurecr.io/playy.identity:1.0.3
           env:
+            - name: ASPNETCORE_URLS
+              value: "http://+:5002"
             - name: ServiceSettings__MessageBroker
               value: SERVICEBUS
             - name: MongoDbSettings__ConnectionString

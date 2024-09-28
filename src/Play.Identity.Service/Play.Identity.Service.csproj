@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <UserSecretsId>89984461-b4f5-44c8-94e4-90bc4952afc1</UserSecretsId>
+    <IsPublishable>true</IsPublishable>
+    <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
+    <ContainerRepository>playy.identity</ContainerRepository>
   </PropertyGroup>
 
   <ItemGroup>
