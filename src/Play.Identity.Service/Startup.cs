@@ -98,7 +98,9 @@ public class Startup
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Play.Identity.Service", Version = "v1" });
         });
 
-        services.AddHealthChecks()
+        // Health Checks
+        services
+            .AddHealthChecks()
             .AddMongoDB(); // Health Check for Mongo Db
     }
 
@@ -140,7 +142,9 @@ public class Startup
         {
             endpoints.MapControllers();
             endpoints.MapRazorPages();
-            endpoints.MapPlayEconomyHealthChecks(); // Health Checks
+            
+            // Map endpoints for Healthchecks
+            endpoints.MapPlayEconomyHealthChecks();
         });
     }
 }
