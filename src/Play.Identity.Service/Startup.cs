@@ -74,10 +74,6 @@ public class Startup
                 options.Events.RaiseSuccessEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseErrorEvents = true;
-
-                // This is required in the Docker environment since the strict linux permissions you'll set
-                // there won't allow IdentityServer to creaet keys in the default /keys directory.
-                options.KeyManagement.KeyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             })
             .AddAspNetIdentity<ApplicationUser>()
             .AddInMemoryApiScopes(identityServiceSettings.ApiScopes)
