@@ -21,7 +21,6 @@ using Play.Common.MassTransit;
 using Play.Common.Settings;
 using Play.Identity.Service.Consumers;
 using Play.Identity.Service.Entities;
-using Play.Identity.Service.HealthChecks;
 using Play.Identity.Service.HostedServices;
 using Play.Identity.Service.Settings;
 using MongoDbSettings = Play.Common.Settings.MongoDbSettings;
