@@ -5,7 +5,7 @@
     <UserSecretsId>89984461-b4f5-44c8-94e4-90bc4952afc1</UserSecretsId>
     <IsPublishable>true</IsPublishable>
     <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
-    <ContainerRepository>playy.identity</ContainerRepository>
+    <ContainerRepository>play.identity</ContainerRepository>
   </PropertyGroup>
 
   <ItemGroup>

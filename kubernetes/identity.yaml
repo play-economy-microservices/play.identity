@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: identity
-          image: playeconomycontainerregistry.azurecr.io/playy.identity:1.0.3
+          image: playeconomycontainerregistry.azurecr.io/play.identity:1.0.4
           securityContext: 
             runAsUser: 0
             privileged: true
@@ -43,6 +43,16 @@ spec:
               cpu: "150m"
           ports:
             - containerPort: 5002
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 5002
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 5002
+            initialDelaySeconds: 10
 
 ---
 apiVersion: v1
