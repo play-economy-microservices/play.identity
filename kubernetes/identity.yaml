@@ -15,7 +15,7 @@ spec:
       serviceAccountName: identity-serviceaccount
       containers:
         - name: identity
-          image: playeconomycontainerregistry.azurecr.io/play.identity:1.0.5
+          image: playeconomycontainerregistry.azurecr.io/play.identity:1.0.6
           securityContext: 
             runAsUser: 0
             privileged: true
@@ -24,6 +24,8 @@ spec:
               value: "http://+:5002"
             - name: ServiceSettings__MessageBroker
               value: SERVICEBUS
+            - name: ServiceSettings__KeyVaultName
+              value: playeconomykeyvault
           resources:
             limits:
               memory: "128Mi"

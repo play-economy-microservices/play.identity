@@ -3,7 +3,7 @@ Play Economy Identity microservice
 
 ## Add the GitHub package source
 ```powershell
-$version="1.0.5"
+$version="1.0.6"
 $owner="play-economy-microservices"
 $gh_pat="[PAT HERE]"
 
