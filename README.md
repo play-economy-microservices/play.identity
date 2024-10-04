@@ -47,6 +47,7 @@ kubectl create namespace $namespace
 ```
 
 ## Create Kubernetes Secrets
+This is only used with K8s secrets. If you're using Key Vault then skip this.
 ```powershell
 kubectl create secret generic identity-secrets 
 --from-literal=cosmosdb-connectionString=$cosmosDbConnString
