@@ -59,3 +59,25 @@ kubectl create secret generic identity-secrets
 $namespace="identity"
 kubectl apply -f ./kubernetes/identity.yaml -n $namespace
 ```
+
+## Creating the Azure Managed Identity and granting it access to the Key Vault
+```powershell
+$namespace="identity"
+$appname="playeconomy"
+
+az identity create --resource-group $appname --name $namespace
+
+$IDENTITY_CLIENT_ID=az identity show -g $appname -n $namespace --query clientId -otsv
+az keyvault set-policy -n $appname --secret-permissions get list --spn $IDENTITY_CLIENT_ID
+```
+
+## Establish the federated identity credential
+```powershell PowerShell
+$appname="playeconomy"
+$namespace="identity" 
+
+$AKS_OIDC_ISSUER=az aks show -n $appname -g $appname --query "oidcIssuerProfile.issuerUrl" -otsv
+
+az identity federated-credential create --name $namespace --identity-name $namespace 
+--resource-group $appname --issuer $AKS_OIDC_ISSUER --subject "system:serviceaccount:${namespace}:${namespace}-serviceaccount"
+```
