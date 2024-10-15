@@ -15,7 +15,7 @@ spec:
       serviceAccountName: identity-serviceaccount
       containers:
         - name: identity
-          image: playeconomycontainerregistry.azurecr.io/play.identity:1.0.6
+          image: playeconomyacr.azurecr.io/play.identity:1.0.7
           securityContext: 
             runAsUser: 0
             privileged: true
@@ -25,7 +25,9 @@ spec:
             - name: ServiceSettings__MessageBroker
               value: SERVICEBUS
             - name: ServiceSettings__KeyVaultName
-              value: playeconomykeyvault
+              value: economykeyvault
+            - name: IdentitySettings__PathBase
+              value: /identity/svc
           resources:
             limits:
               memory: "128Mi"
@@ -49,7 +51,7 @@ kind: Service
 metadata:
   name: identity-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP # Local within cluster but not externally public
   selector:
     app: identity
   ports:
@@ -62,7 +64,7 @@ kind: ServiceAccount
 metadata:
   name: identity-serviceaccount
   annotations:
-    azure.workload.identity/client-id: e3aa6c5a-6581-4a28-8ddf-3f61cb840875
+    azure.workload.identity/client-id: c1ff5a2f-073b-4c8c-9daf-f9c51de11e8b
   labels:
     azure.workload.identity/use: "true"
   

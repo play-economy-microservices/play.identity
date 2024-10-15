@@ -78,6 +78,8 @@ public class Startup
                 options.Events.RaiseSuccessEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseErrorEvents = true;
+                // explicitly define the location where IdentityServer can store and retrieve cryptographic keys used for token protection
+                options.KeyManagement.KeyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             })
             .AddAspNetIdentity<ApplicationUser>()
             .AddInMemoryApiScopes(identityServiceSettings.ApiScopes)
@@ -124,6 +126,15 @@ public class Startup
 
         app.UseHttpsRedirection();
 
+        // Configure middleware for service Path Base use by the Emissary Ingress Gateway
+        app.Use((context, next) =>
+        {
+            var identitySettings = Configuration.GetSection(nameof(IdentitySettings)).Get<IdentitySettings>();
+
+            context.Request.PathBase = new PathString(identitySettings.PathBase);
+            return next();
+        });
+        
         app.UseStaticFiles();
 
         app.UseRouting();

@@ -16,4 +16,9 @@ public class IdentitySettings
 	/// The Starting Gil
 	/// </summary>
 	public decimal StartingGil { get; init; }
+
+	/// <summary>
+	/// The path base for routing to this service
+	/// </summary>
+	public string PathBase { get; set; }
 }
