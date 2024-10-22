@@ -2,20 +2,17 @@ using System;
 using System.IO;
 using System.Reflection;
 using GreenPipes;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Driver;
 using Play.Common.HealthChecks;
 using Play.Common.MassTransit;
 using Play.Common.Settings;
@@ -104,11 +101,21 @@ public class Startup
         services
             .AddHealthChecks()
             .AddMongoDB(); // Health Check for Mongo Db
+        
+        // Configure headers to access gateway
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        app.UseForwardedHeaders(); // for ForwardedHeadersOptions
+        
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
