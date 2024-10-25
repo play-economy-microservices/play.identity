@@ -20,5 +20,12 @@ public class IdentitySettings
 	/// <summary>
 	/// The path base for routing to this service
 	/// </summary>
-	public string PathBase { get; set; }
+	public string PathBase { get; init; }
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public string CertificateCerFilePath { get; init; }
+
+	public string CertificateKeyFilePath { get; init; }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using GreenPipes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,9 +30,12 @@ public class Startup
 {
     private const string AllowedOriginSetting = "AllowedOrigin";
 
-    public Startup(IConfiguration configuration)
+    private readonly IHostEnvironment enviroment;
+
+    public Startup(IConfiguration configuration, IHostEnvironment enviroment)
     {
         Configuration = configuration;
+        this.enviroment = enviroment;
     }
 
     public IConfiguration Configuration { get; }
@@ -45,7 +49,6 @@ public class Startup
         // Bindings
         var serviceSettings = Configuration.GetSection(nameof(ServiceSettings)).Get<ServiceSettings>();
         var mongoDbSettings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
-        var identityServiceSettings = Configuration.GetSection(nameof(IdentityServerSettings)).Get<IdentityServerSettings>();
 
         // Default Configurations for Identity Mongo DB
         // Note: You're able to retrieve IdentitySettings from the runtime.
@@ -67,22 +70,7 @@ public class Startup
             retryConfigurator.Ignore(typeof(InsufficientFundsException));
         });
 
-        // Default Configurations for Identity Service
-        services
-            .AddIdentityServer(options =>
-            {
-                // For logging purposes
-                options.Events.RaiseSuccessEvents = true;
-                options.Events.RaiseFailureEvents = true;
-                options.Events.RaiseErrorEvents = true;
-                // explicitly define the location where IdentityServer can store and retrieve cryptographic keys used for token protection
-                options.KeyManagement.KeyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            })
-            .AddAspNetIdentity<ApplicationUser>()
-            .AddInMemoryApiScopes(identityServiceSettings.ApiScopes)
-            .AddInMemoryApiResources(identityServiceSettings.ApiResources)
-            .AddInMemoryClients(identityServiceSettings.Clients)
-            .AddInMemoryIdentityResources(identityServiceSettings.identityResources);
+        AddIdentityServer(services);
 
         // Add this line to secure Api with built in Policy
         services.AddLocalApiAuthentication();
@@ -164,5 +152,44 @@ public class Startup
             // Map endpoints for Healthchecks
             endpoints.MapPlayEconomyHealthChecks();
         });
+    }
+    
+    /// <summary>
+    /// Configures IdentityServer for authentication and authorization services.
+    /// </summary>
+    private void AddIdentityServer(IServiceCollection services)
+    {
+        var identityServiceSettings = Configuration.GetSection(nameof(IdentityServerSettings)).Get<IdentityServerSettings>();
+        
+        // Default Configurations for Identity Service
+        var builder = services
+            .AddIdentityServer(options =>
+            {
+                // For logging purposes
+                options.Events.RaiseSuccessEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseErrorEvents = true;
+                // explicitly define the location where IdentityServer can store and retrieve cryptographic keys used for token protection
+                options.KeyManagement.KeyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            })
+            .AddAspNetIdentity<ApplicationUser>()
+            .AddInMemoryApiScopes(identityServiceSettings.ApiScopes)
+            .AddInMemoryApiResources(identityServiceSettings.ApiResources)
+            .AddInMemoryClients(identityServiceSettings.Clients)
+            .AddInMemoryIdentityResources(identityServiceSettings.identityResources);
+
+        // If the environment is not development, load certificate for token signing
+        if (!enviroment.IsDevelopment())
+        {
+            var identitySettings = Configuration.GetSection(nameof(IdentitySettings)).Get<IdentitySettings>();
+            
+            // Load X.509 certificate from PEM files (e.g identity.yaml)
+            var cert = X509Certificate2.CreateFromPemFile(
+                identitySettings.CertificateCerFilePath,
+                identitySettings.CertificateKeyFilePath);
+
+            // sign the generated token
+            builder.AddSigningCredential(cert);
+        }
     }
 }
