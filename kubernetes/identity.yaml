@@ -28,6 +28,10 @@ spec:
               value: economykeyvault
             - name: IdentitySettings__PathBase
               value: /identity/svc
+            - name: IdentitySettings__CertificateCerFilePath # from certificate-volume
+              value: "/certificates/certificate.crt"
+            - name: IdentitySettings__CertificateKeyFilePath # from certificate-volume
+              value: "/certificates/certificate.key"
           resources:
             limits:
               memory: "128Mi"
@@ -44,6 +48,18 @@ spec:
               path: /health/ready
               port: 5002
             initialDelaySeconds: 10
+          volumeMounts: # mount to any other volumes
+            - name: certificate-volume
+              mountPath: /certificates
+      volumes:
+        - name: certificate-volume
+          secret:
+            secretName: signing-cert # obtain from signing-cert.yaml Certificate
+            items: # reference the signing cert key from the signing-cert service
+              - key: tls.key
+                path: certificate.key
+              - key: tls.crt
+                path: certificate.crt    
 
 ---
 apiVersion: v1

@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: signing-cert
+spec:
+  secretName: signing-cert
+  # the issuer remains to provision the new cert
+  issuerRef:
+    name: letsencrypt-pod # refers to the ClusterIssuer
+    kind: ClusterIssuer
+  dnsNames:
+    - "playeconomy-gateway.westus2.cloudapp.azure.com"
