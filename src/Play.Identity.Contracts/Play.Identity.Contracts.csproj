@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <PackageDescription>Common Contracts used by Play Economy services.</PackageDescription>
-    <Authors>Giovanny Hernandez</Authors>
-    <Company>.NET Microservices</Company>
+    <PackageDescription>Contracts supported by the Identity microservice.</PackageDescription>
+    <Authors>Julio Casal</Authors>
+    <Company>.NET Microservices</Company>        
   </PropertyGroup>
 
 </Project>

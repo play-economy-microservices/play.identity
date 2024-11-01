@@ -1,14 +1,17 @@
-﻿using System;
+using System;
+using System.Runtime.Serialization;
 
-namespace Play.Identity.Service.Consumers;
-
-[Serializable]
-internal class UnknownUserException : Exception
+namespace Play.Identity.Service.Exceptions
 {
-    public UnknownUserException(Guid userId) : base($"Unknwon user '{userId}'")
+    [Serializable]
+    internal class UnknownUserException : Exception
     {
-        this.UserId = userId;
-    }
+        public UnknownUserException(Guid userId)
+        : base ($"Unknown user '{userId}'")
+        {
+            this.UserId = userId;
+        }
 
-    public Guid UserId { get; }    
+        public Guid UserId { get; }
+    }
 }

@@ -29,24 +29,22 @@ namespace Play.Identity.Service.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly IdentitySettings identitySettings;
-
-        private readonly IPublishEndpoint publishEndpoint;
-
+        private readonly IPublishEndpoint publisEndpoint;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            IOptions<IdentitySettings> identityOptions,
-            IPublishEndpoint publishEndpoint)
+            IOptions<IdentitySettings> identityOptions, 
+            IPublishEndpoint publisEndpoint)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
-            identitySettings = identityOptions.Value;
-            this.publishEndpoint = publishEndpoint;
+            this.identitySettings = identityOptions.Value;
+            this.publisEndpoint = publisEndpoint;
         }
 
         [BindProperty]
@@ -93,18 +91,14 @@ namespace Play.Identity.Service.Areas.Identity.Pages.Account
                     Email = Input.Email,
                     Gil = identitySettings.StartingGil
                 };
-
                 var result = await _userManager.CreateAsync(user, Input.Password);
-
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
                     await _userManager.AddToRoleAsync(user, Roles.Player);
 
-                    _logger.LogInformation($"User added to the role {Roles.Player} role.");
-
-                    await publishEndpoint.Publish(new UserUpdated(user.Id, user.Email, user.Gil));
+                    await publisEndpoint.Publish(new UserUpdated(user.Id, user.Email, user.Gil));
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

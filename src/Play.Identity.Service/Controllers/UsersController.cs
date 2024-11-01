@@ -11,84 +11,84 @@ using Play.Identity.Service.Dtos;
 using Play.Identity.Service.Entities;
 using static Duende.IdentityServer.IdentityServerConstants;
 
-namespace Play.Identity.Service.Controllers;
-
-[ApiController]
-[Route("users")]
-[Authorize(Policy = LocalApi.PolicyName, Roles = Roles.Admin)]
-public class UsersController : ControllerBase
+namespace Play.Identity.Service.Controllers
 {
-    /// <summary>
-	/// This instance allows to talk directly to the UserManager within the ASP.NET Core Identity.
-	/// </summary>
-    private readonly UserManager<ApplicationUser> userManager;
-
-    private readonly IPublishEndpoint publishEndpoint;
-
-    public UsersController(UserManager<ApplicationUser> userManager, IPublishEndpoint publishEndpoint)
+    [ApiController]
+    [Route("users")]
+    [Authorize(Policy = LocalApi.PolicyName, Roles = Roles.Admin)]
+    public class UsersController : ControllerBase
     {
-        this.userManager = userManager;
-        this.publishEndpoint = publishEndpoint;
-    }
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly IPublishEndpoint publishEndpoint;
 
-    [HttpGet]
-    public ActionResult<IEnumerable<UserDto>> Get()
-    {
-        var users = userManager.Users
-            .ToList()
-            .Select(user => user.AsDto());
-
-        return Ok(users);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<UserDto>> GetByIdAsync(Guid id)
-    {
-        var user = await userManager.FindByIdAsync(id.ToString());
-
-        if (user == null)
+        public UsersController(UserManager<ApplicationUser> userManager, IPublishEndpoint publishEndpoint)
         {
-            return NotFound();
+            this.userManager = userManager;
+            this.publishEndpoint = publishEndpoint;
         }
 
-        return user.AsDto();
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutAsync(Guid id, UpdateUserDto userDto)
-    {
-        var user = await userManager.FindByIdAsync(id.ToString());
-
-        if (user == null)
+        [HttpGet]
+        public ActionResult<IEnumerable<UserDto>> Get()
         {
-            return NotFound();
+            var users = userManager.Users
+                .ToList()
+                .Select(user => user.AsDto());
+
+            return Ok(users);
         }
 
-        user.Email = userDto.Email;
-        user.UserName = userDto.Email;
-        user.Gil = userDto.Gil;
-
-        await userManager.UpdateAsync(user);
-
-        await publishEndpoint.Publish(new UserUpdated(user.Id, userDto.Email, userDto.Gil));
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteAsync(Guid id)
-    {
-        var user = await userManager.FindByIdAsync(id.ToString());
-
-        if (user == null)
+        // /users/{123}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDto>> GetByIdAsync(Guid id)
         {
-            return NotFound();
+            var user = await userManager.FindByIdAsync(id.ToString());
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user.AsDto();
         }
 
-        await userManager.DeleteAsync(user);
+        // /users/{123}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAsync(Guid id, UpdateUserDto userDto)
+        {
+            var user = await userManager.FindByIdAsync(id.ToString());
 
-        await publishEndpoint.Publish(new UserUpdated(user.Id, user.Email, 0));
+            if (user == null)
+            {
+                return NotFound();
+            }
 
-        return NoContent();
+            user.Email = userDto.Email;
+            user.UserName = userDto.Email;
+            user.Gil = userDto.Gil;
+
+            await userManager.UpdateAsync(user);
+
+            await publishEndpoint.Publish(new UserUpdated(user.Id, user.Email, user.Gil));
+
+            return NoContent();
+        }
+
+        // /users/{123}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
+        {
+            var user = await userManager.FindByIdAsync(id.ToString());
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            await userManager.DeleteAsync(user);
+
+            await publishEndpoint.Publish(new UserUpdated(user.Id, user.Email, 0));
+
+            return NoContent();
+        }
     }
 }

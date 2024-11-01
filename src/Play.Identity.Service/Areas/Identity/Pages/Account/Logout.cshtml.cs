@@ -29,7 +29,6 @@ namespace Play.Identity.Service.Areas.Identity.Pages.Account
             this.interaction = interaction;
         }
 
-        // Add this method to redirect user to frotend after logout.
         public async Task<IActionResult> OnGet(string logoutId)
         {
             var context = await interaction.GetLogoutContextAsync(logoutId);
