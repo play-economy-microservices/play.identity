@@ -18,7 +18,11 @@ namespace Play.Identity.Service.Controllers
     [Authorize(Policy = LocalApi.PolicyName, Roles = Roles.Admin)]
     public class UsersController : ControllerBase
     {
+        /// <summary>
+        /// This instance allows to talk directly to the UserManager within the ASP.NET Core Identity.
+        /// </summary>
         private readonly UserManager<ApplicationUser> userManager;
+        
         private readonly IPublishEndpoint publishEndpoint;
 
         public UsersController(UserManager<ApplicationUser> userManager, IPublishEndpoint publishEndpoint)

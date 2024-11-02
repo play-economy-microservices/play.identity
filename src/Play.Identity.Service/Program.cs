@@ -13,7 +13,7 @@ namespace Play.Identity.Service
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAzureKeyVault()
+                .ConfigureAzureKeyVault() // Add KeyVault
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <UserSecretsId>e9df51d0-e4ec-432d-b153-ea7693bf6e39</UserSecretsId>
+    <IsPublishable>true</IsPublishable>
+    <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
+    <ContainerRepository>play.identity</ContainerRepository>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,6 +9,9 @@ using Play.Identity.Service.Settings;
 
 namespace Play.Identity.Service.HostedServices
 {
+    /// <summary>
+    /// This class will server for running background tasks regarding for IdentityService.
+    /// </summary>
     public class IdentitySeedHostedService : IHostedService
     {
         private readonly IServiceScopeFactory serviceScopeFactory;
@@ -29,6 +32,7 @@ namespace Play.Identity.Service.HostedServices
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
+            // Do some background processing with the RoleManager dependency
             await CreateRoleIfNotExistsAsync(Roles.Admin, roleManager);
             await CreateRoleIfNotExistsAsync(Roles.Player, roleManager);
 

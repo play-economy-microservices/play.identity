@@ -25,6 +25,7 @@ namespace Play.Identity.Service
     public class Startup
     {
         private const string AllowedOriginSetting = "AllowedOrigin";
+        
         private readonly IHostEnvironment environment;
 
         public Startup(IConfiguration configuration, IHostEnvironment environment)
@@ -38,10 +39,13 @@ namespace Play.Identity.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Manual Configurations - Keep original types when inserting MongoDB Docouments
             BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
+            
             var serviceSettings = Configuration.GetSection(nameof(ServiceSettings)).Get<ServiceSettings>();
             var mongoDbSettings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
 
+            // Default Configurations for Identity and Mongo DB
             services.Configure<IdentitySettings>(Configuration.GetSection(nameof(IdentitySettings)))
                 .AddDefaultIdentity<ApplicationUser>()
                 .AddRoles<ApplicationRole>()
@@ -51,6 +55,7 @@ namespace Play.Identity.Service
                     serviceSettings.ServiceName
                 );
 
+            // Register Rabbit MQ to consume messages
             services.AddMassTransitWithMessageBroker(Configuration, retryConfigurator =>
             {
                 retryConfigurator.Interval(3, TimeSpan.FromSeconds(5));
@@ -60,18 +65,19 @@ namespace Play.Identity.Service
 
             AddIdentityServer(services);
 
-            services.AddLocalApiAuthentication();
+            services.AddLocalApiAuthentication(); // Add this to secure Api with built-in Policy
 
             services.AddControllers();
-            services.AddHostedService<IdentitySeedHostedService>();
+            services.AddHostedService<IdentitySeedHostedService>(); // Register HostedServices here
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Play.Identity.Service", Version = "v1" });
             });
 
             services.AddHealthChecks()
-                    .AddMongoDb();
+                    .AddMongoDb(); // Health Check for Mongo Db
 
+            // Configure headers to access gateway
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -101,6 +107,7 @@ namespace Play.Identity.Service
 
             app.UseHttpsRedirection();
 
+            // Configure middleware for service Path Base use by the Emissary Ingress Gateway
             app.Use((context, next) =>
             {
                 var identitySettings = Configuration.GetSection(nameof(IdentitySettings))
@@ -113,14 +120,14 @@ namespace Play.Identity.Service
 
             app.UseRouting();
 
-            app.UseIdentityServer();
+            app.UseIdentityServer(); // Add this after UseRouting()
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                endpoints.MapPlayEconomyHealthChecks();
+                endpoints.MapPlayEconomyHealthChecks(); // Map endpoints for Healthchecks
             });
         }
 
