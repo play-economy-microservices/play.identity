@@ -32,6 +32,10 @@ spec:
               value: "/certificates/certificate.crt"
             - name: IdentitySettings__CertificateKeyFilePath # from certificate-volume
               value: "/certificates/certificate.key"
+            - name: IdentityServerSettings__Clients__0__RedirectUris__0 # Override for frontend redirects
+              value: https://playeconomy-gateway.westus2.cloudapp.azure.com/authentication/login-callback
+            - name: IdentityServerSettings__Clients__0__PostLogoutRedirectUris__0 # Override for frontend redirects
+              value: https://playeconomy-gateway.westus2.cloudapp.azure.com/authentication/logout-callback
           resources:
             limits:
               memory: "128Mi"
