@@ -1,0 +1,5 @@
+microserviceName: "identity"
+
+image:
+  repository: playeconomyacr.azurecr.io/play.identity
+  tag: 1.0.10
