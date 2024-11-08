@@ -42,3 +42,13 @@ volumes:
           path: certificate.key
         - key: tls.crt
           path: certificate.crt
+
+service:
+  type: ClusterIP
+  port: 80
+
+certificate:
+  secretName: signing-cert
+  hostname: "playeconomy-gateway.westus2.cloudapp.azure.com"
+
+identityClientId: c1ff5a2f-073b-4c8c-9daf-f9c51de11e8b

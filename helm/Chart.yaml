@@ -1,0 +1,4 @@
+apiVersion: v2
+name: microservice
+description: Installs a PlayEconomy microservice
+version: 0.1.0 # version of chart - ensure to bump this based on changes

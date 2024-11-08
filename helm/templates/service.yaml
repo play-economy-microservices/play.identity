@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: identity-service
+  name: "{{.Values.microserviceName}}-service"
 spec:
-  type: ClusterIP # Local within cluster but not externally public
+  type: {{.Values.service.type}} # Local within cluster but not externally public
   selector:
-    app: identity
+    app: {{.Values.microserviceName}}
   ports:
-    - port: 80
-      targetPort: 5002
+    - port: {{.Values.service.port}}
+      targetPort: {{.Values.container.port}}
