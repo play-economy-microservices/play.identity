@@ -1,5 +1,6 @@
 microserviceName: "identity"
 
+# docker image
 image:
   repository: playeconomyacr.azurecr.io/play.identity
   tag: 1.0.10
@@ -7,8 +8,6 @@ image:
 # Dictionary of Enviroment Variables
 envVariables:
   ASPNETCORE_URLS: "http://+:5002"
-  ServiceSettings__MessageBroker: SERVICEBUS
-  ServiceSettings__KeyVaultName: economykeyvault
   IdentitySettings__PathBase: /identity/svc
   IdentitySettings__CertificateCerFilePath: "/certificates/certificate.crt"
   IdentitySettings__CertificateKeyFilePath: "/certificates/certificate.key"
@@ -17,22 +16,17 @@ envVariables:
 
 resources:
   limits:
-    memory: "128Mi"
-    cpu: "150m"
+    memory: "256Mi"
+    cpu: "300m"
 
 # Container specifications
 container:
   port: 5002
-  liveness:
-    path: /health/live
-    initialDelaySeconds: 10
-  readiness:
-    path: /health/ready
-    initialDelaySeconds: 10
   volumeMounts:
     - name: certificate-volume
       mountPath: /certificates
 
+# Sign Certificate Volume
 volumes:
   - name: certificate-volume
     secret:
@@ -43,10 +37,7 @@ volumes:
         - key: tls.crt
           path: certificate.crt
 
-service:
-  type: ClusterIP
-  port: 80
-
+# Certificate Service
 certificate:
   secretName: signing-cert
   hostname: "playeconomy-gateway.westus2.cloudapp.azure.com"
