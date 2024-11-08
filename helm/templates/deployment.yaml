@@ -19,48 +19,26 @@ spec:
           securityContext:
             runAsUser: 0
             privileged: true
-          env:
-            - name: ASPNETCORE_URLS
-              value: "http://+:5002"
-            - name: ServiceSettings__MessageBroker
-              value: SERVICEBUS
-            - name: ServiceSettings__KeyVaultName
-              value: economykeyvault
-            - name: IdentitySettings__PathBase
-              value: /identity/svc
-            - name: IdentitySettings__CertificateCerFilePath
-              value: "/certificates/certificate.crt"
-            - name: IdentitySettings__CertificateKeyFilePath
-              value: "/certificates/certificate.key"
-            - name: IdentityServerSettings__Clients__0__RedirectUris__0
-              value: https://playeconomy-gateway.westus2.cloudapp.azure.com/authentication/login-callback
-            - name: IdentityServerSettings__Clients__0__PostLogoutRedirectUris__0
-              value: https://playeconomy-gateway.westus2.cloudapp.azure.com/authentication/logout-callback
+          env: # Env mappings
+            {{- range $key, $value := .Values.envVariables }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
           resources:
-            limits:
-              memory: "128Mi"
-              cpu: "150m"
+            {{- toYaml .Values.resources | nindent 12 }} 
           ports:
-            - containerPort: 5002
+            - containerPort: {{.Values.container.port}}
           livenessProbe:
             httpGet:
-              path: /health/live
-              port: 5002
-            initialDelaySeconds: 10
+              path: {{.Values.container.liveness.path}}
+              port: {{.Values.container.port}}
+            initialDelaySeconds: {{.Values.container.liveness.initialDelaySeconds}}
           readinessProbe:
             httpGet:
-              path: /health/ready
-              port: 5002
-            initialDelaySeconds: 10
+              path: {{.Values.container.readiness.path}}
+              port: {{.Values.container.port}}
+            initialDelaySeconds: {{.Values.container.readiness.initialDelaySeconds}}
           volumeMounts:
-            - name: certificate-volume
-              mountPath: /certificates
+            {{- toYaml .Values.container.volumeMounts | nindent 12 }} 
       volumes:
-        - name: certificate-volume
-          secret:
-            secretName: signing-cert
-            items:
-              - key: tls.key
-                path: certificate.key
-              - key: tls.crt
-                path: certificate.crt
+        {{- toYaml .Values.volumes | nindent 8 }} 
