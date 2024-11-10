@@ -1,0 +1,22 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: CICD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  package-and-publish-contracts:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4 # checkout the latest code
+    - name: Setup .NET # Setup .NET env
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0.x
+    - name: Pack
+      run: dotnet pack src/Play.Identity.Contracts/ --configuration Release -p:RepositoryUrl=https://github.com/${{github.repository_owner}}/play.identity -o packages
