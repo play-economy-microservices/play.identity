@@ -60,3 +60,28 @@ jobs:
 
     - name: Publish
       run: dotnet nuget push packages/*.nupkg
+
+  # This publishes the contracts
+  build-and-deploy-service:
+  
+    runs-on: ubuntu-latest
+    needs: generate-version # this job requires this to be completed
+
+    env:
+      APP_NAME: play-economy-microservices
+  
+    permissions:
+      contents: read
+      packages: write
+  
+    steps:
+    - uses: actions/checkout@v4 # checkout the latest code
+
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v6.9.0
+      with:
+        # List of secrets to expose to the build (e.g., key=string, GIT_AUTH_TOKEN=mytoken)
+        secrets: |
+          "GH_OWNER=${{github.repository_owner}}"
+          "GH_PAT=${{secrets.GH_PAT}}"
+        tags: ${{env.APP_NAME}}.azurecr.io/play.identity:${{ needs.generate-version.outputs.new_version }}
