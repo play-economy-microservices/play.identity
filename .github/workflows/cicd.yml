@@ -70,6 +70,10 @@ jobs:
 
     env:
       APP_NAME: play-economy-microservices
+      ACR_NAME: playeconomyacr
+      AZ_RG_NAME: playeconomy
+      SERVICE_NAME: identity
+      HELM_CHART_VERSION: 0.1.0
   
     permissions:
       id-token: write
@@ -84,6 +88,9 @@ jobs:
         client-id: ${{secrets.AZURE_CLIENT_ID}}
         tenant-id: ${{secrets.AZURE_TENANT_ID}}
         subscription-id: ${{secrets.AZURE_SUBSCRIPTION_ID}}
+
+    - name: Login to container registry
+      run: az acr login --name ${{ env.ACR_NAME }}
           
     - name: Build and push Docker images
       uses: docker/build-push-action@v6.9.0
@@ -92,4 +99,32 @@ jobs:
         secrets: |
           "GH_OWNER=${{github.repository_owner}}"
           "GH_PAT=${{secrets.GH_PAT}}"
-        tags: ${{env.APP_NAME}}.azurecr.io/play.identity:${{ needs.generate-version.outputs.new_version }}
+        tags: ${{env.ACR_NAME}}.azurecr.io/play.identity:${{ needs.generate-version.outputs.new_version }}
+        push: true
+        
+    - name: Get AKS Credentials
+      run: az aks get-credentials --resource-group ${{ env.AZ_RG_NAME }} --name ${{ env.AZ_RG_NAME }}
+
+      # Install Helm to use it
+    - name: Helm tool installer
+      uses: Azure/setup-helm@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }} # GitHub token. Required only if 'version' == 'latest'
+          
+    - name: Login to Helm registry
+      run: |
+        helmUser="00000000-0000-0000-0000-000000000000"
+        helmPassword=$(az acr login --name ${{ env.ACR_NAME }} --expose-token --output tsv --query accessToken)
+        helm registry login ${{ env.ACR_NAME }}.azurecr.io --username $helmUser --password $helmPassword
+
+    - name: Deploy Helm Chart
+      run: |
+        helm upgrade \
+        ${{env.SERVICE_NAME}}-service \
+        oci://${{ env.ACR_NAME }}.azurecr.io/helm/microservice \
+        --version ${{env.HELM_CHART_VERSION}} \
+        -f helm/values.yaml \
+        -n ${{env.SERVICE_NAME}} \
+        --set image.tag=${{ needs.generate-version.outputs.new_version }} \
+        --install \
+        --wait
