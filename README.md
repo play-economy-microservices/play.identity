@@ -131,3 +131,10 @@ helm registry login "$appname.azurecr.io" --username $helmUser --password $helmP
 $chartVersion="0.1.0"
 helm upgrade identity-service oci://$appname.azurecr.io/helm/microservice --version $chartVersion -f ./helm/values.yaml -n $namespace --install
 ```
+
+## Required repository secrets for GitHub Workflow
+
+- `GH_PAT`
+- `AZURE_CLIENT_ID`
+- `AZURE_TENANT_ID`
+- `AZURE_SUBSCRIPTION_ID`
