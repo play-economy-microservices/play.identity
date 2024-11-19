@@ -5,7 +5,7 @@ name: CICD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   # this will generate the version that `package-and-publish-contracts` will take as output
@@ -16,23 +16,22 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Github Tag Bump
-      id: tag_bump
-      # You may pin to the exact commit or the version.
-      # uses: anothrNick/github-tag-action@a2c70ae13a881faf2b4953baaa9e49731997ab36
-      uses: anothrNick/github-tag-action@1.67.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        INITIAL_VERSION: 1.0.2 # this comes from your Contracts pkg
-        DEFAULT_BUMP: patch # 1.0.x
-        
+      - uses: actions/checkout@v4
+      - name: Github Tag Bump
+        id: tag_bump
+        # You may pin to the exact commit or the version.
+        # uses: anothrNick/github-tag-action@a2c70ae13a881faf2b4953baaa9e49731997ab36
+        uses: anothrNick/github-tag-action@1.67.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_VERSION: 1.0.2 # this comes from your Contracts pkg
+          DEFAULT_BUMP: patch # 1.0.x
+
     outputs:
       new_version: ${{ steps.tag_bump.outputs.new_tag }} # store the generated tag
-          
+
   # This publishes the contracts
   package-and-publish-contracts:
-
     runs-on: ubuntu-latest
     needs: generate-version # this job requires this to be completed
 
@@ -41,30 +40,29 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v4 # checkout the latest code
-    
-    - name: Setup .NET 
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 7.0.x
-        source-url: https://nuget.pkg.github.com/${{github.repository_owner}}/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Pack
-      run: | 
-        dotnet pack src/Play.Identity.Contracts/ \
-        --configuration Release \
-        -p:PackageVersion=${{ needs.generate-version.outputs.new_version }} \
-        -p:RepositoryUrl=https://github.com/${{github.repository_owner}}/play.identity \
-        -o packages
+      - uses: actions/checkout@v4 # checkout the latest code
 
-    - name: Publish
-      run: dotnet nuget push packages/*.nupkg
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.0.x
+          source-url: https://nuget.pkg.github.com/${{github.repository_owner}}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pack
+        run: |
+          dotnet pack src/Play.Identity.Contracts/ \
+          --configuration Release \
+          -p:PackageVersion=${{ needs.generate-version.outputs.new_version }} \
+          -p:RepositoryUrl=https://github.com/${{github.repository_owner}}/play.identity \
+          -o packages
+
+      - name: Publish
+        run: dotnet nuget push packages/*.nupkg
 
   # This publishes the contracts
   build-and-deploy-service:
-  
     runs-on: ubuntu-latest
     needs: generate-version # this job requires this to be completed
 
@@ -73,58 +71,58 @@ jobs:
       ACR_NAME: playeconomyacr
       AZ_RG_NAME: playeconomy
       SERVICE_NAME: identity
-      HELM_CHART_VERSION: 0.1.0
-  
+      HELM_CHART_VERSION: 0.1.1
+
     permissions:
       id-token: write
       contents: read
-  
+
     steps:
-    - uses: actions/checkout@v4 # checkout the latest code
-    
-    - name: Azure Login
-      uses: Azure/login@v2.2.0
-      with:
-        client-id: ${{secrets.AZURE_CLIENT_ID}}
-        tenant-id: ${{secrets.AZURE_TENANT_ID}}
-        subscription-id: ${{secrets.AZURE_SUBSCRIPTION_ID}}
+      - uses: actions/checkout@v4 # checkout the latest code
 
-    - name: Login to container registry
-      run: az acr login --name ${{ env.ACR_NAME }}
-          
-    - name: Build and push Docker images
-      uses: docker/build-push-action@v6.9.0
-      with:
-        # List of secrets to expose to the build (e.g., key=string, GIT_AUTH_TOKEN=mytoken)
-        secrets: |
-          "GH_OWNER=${{github.repository_owner}}"
-          "GH_PAT=${{secrets.GH_PAT}}"
-        tags: ${{env.ACR_NAME}}.azurecr.io/play.identity:${{ needs.generate-version.outputs.new_version }}
-        push: true
-        
-    - name: Get AKS Credentials
-      run: az aks get-credentials --resource-group ${{ env.AZ_RG_NAME }} --name ${{ env.AZ_RG_NAME }}
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          client-id: ${{secrets.AZURE_CLIENT_ID}}
+          tenant-id: ${{secrets.AZURE_TENANT_ID}}
+          subscription-id: ${{secrets.AZURE_SUBSCRIPTION_ID}}
 
-      # Install Helm to use it
-    - name: Helm tool installer
-      uses: Azure/setup-helm@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }} # GitHub token. Required only if 'version' == 'latest'
-          
-    - name: Login to Helm registry
-      run: |
-        helmUser="00000000-0000-0000-0000-000000000000"
-        helmPassword=$(az acr login --name ${{ env.ACR_NAME }} --expose-token --output tsv --query accessToken)
-        helm registry login ${{ env.ACR_NAME }}.azurecr.io --username $helmUser --password $helmPassword
+      - name: Login to container registry
+        run: az acr login --name ${{ env.ACR_NAME }}
 
-    - name: Deploy Helm Chart
-      run: |
-        helm upgrade \
-        ${{env.SERVICE_NAME}}-service \
-        oci://${{ env.ACR_NAME }}.azurecr.io/helm/microservice \
-        --version ${{env.HELM_CHART_VERSION}} \
-        -f helm/values.yaml \
-        -n ${{env.SERVICE_NAME}} \
-        --set image.tag=${{ needs.generate-version.outputs.new_version }} \
-        --install \
-        --wait
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v6.9.0
+        with:
+          # List of secrets to expose to the build (e.g., key=string, GIT_AUTH_TOKEN=mytoken)
+          secrets: |
+            "GH_OWNER=${{github.repository_owner}}"
+            "GH_PAT=${{secrets.GH_PAT}}"
+          tags: ${{env.ACR_NAME}}.azurecr.io/play.identity:${{ needs.generate-version.outputs.new_version }}
+          push: true
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group ${{ env.AZ_RG_NAME }} --name ${{ env.AZ_RG_NAME }}
+
+        # Install Helm to use it
+      - name: Helm tool installer
+        uses: Azure/setup-helm@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # GitHub token. Required only if 'version' == 'latest'
+
+      - name: Login to Helm registry
+        run: |
+          helmUser="00000000-0000-0000-0000-000000000000"
+          helmPassword=$(az acr login --name ${{ env.ACR_NAME }} --expose-token --output tsv --query accessToken)
+          helm registry login ${{ env.ACR_NAME }}.azurecr.io --username $helmUser --password $helmPassword
+
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade \
+          ${{env.SERVICE_NAME}}-service \
+          oci://${{ env.ACR_NAME }}.azurecr.io/helm/microservice \
+          --version ${{env.HELM_CHART_VERSION}} \
+          -f helm/values.yaml \
+          -n ${{env.SERVICE_NAME}} \
+          --set image.tag=${{ needs.generate-version.outputs.new_version }} \
+          --install \
+          --wait

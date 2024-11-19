@@ -13,6 +13,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using Play.Common.HealthChecks;
+using Play.Common.Logging;
 using Play.Common.MassTransit;
 using Play.Common.Settings;
 using Play.Identity.Service.Entities;
@@ -39,7 +40,7 @@ namespace Play.Identity.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Manual Configurations - Keep original types when inserting MongoDB Docouments
+            // Manual Configurations - Keep original types when inserting MongoDB Documents
             BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
             
             var serviceSettings = Configuration.GetSection(nameof(ServiceSettings)).Get<ServiceSettings>();
@@ -74,8 +75,12 @@ namespace Play.Identity.Service
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Play.Identity.Service", Version = "v1" });
             });
 
+            // Health Checks
             services.AddHealthChecks()
                     .AddMongoDb(); // Health Check for Mongo Db
+
+            // Seq logging
+            services.AddSeqLogging(Configuration);
 
             // Configure headers to access gateway
             services.Configure<ForwardedHeadersOptions>(options =>

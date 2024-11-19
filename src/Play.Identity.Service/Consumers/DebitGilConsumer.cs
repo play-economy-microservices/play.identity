@@ -1,15 +1,19 @@
 using System.Threading.Tasks;
+using DnsClient.Internal;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Play.Identity.Contracts;
 using Play.Identity.Service.Entities;
 using Play.Identity.Service.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Play.Identity.Service.Consumers
 {
     public class DebitGilConsumer : IConsumer<DebitGil>
     {
         private readonly UserManager<ApplicationUser> userManager;
+
+        private readonly ILogger<DebitGilConsumer> logger;
 
         public DebitGilConsumer(UserManager<ApplicationUser> userManager)
         {
@@ -19,6 +23,12 @@ namespace Play.Identity.Service.Consumers
         public async Task Consume(ConsumeContext<DebitGil> context)
         {
             var message = context.Message;
+            
+            logger.LogInformation(
+                "Received debit gil request of {Quantity} from user {UserId} with CorrelationId {CorrelationId}", 
+                message.Gil,
+                message.UserId,
+                message.CorrelationId);
 
             var user = await userManager.FindByIdAsync(message.UserId.ToString());
 
@@ -38,6 +48,12 @@ namespace Play.Identity.Service.Consumers
 
             if (user.Gil < 0)
             {
+                logger.LogError(
+                    "Unable to debit gil of {Quantity} from user {UserId} with CorrelationId {CorrelationId}", 
+                    message.Gil,
+                    message.UserId,
+                    message.CorrelationId);
+                
                 throw new InsufficientFundsException(message.UserId, message.Gil);
             }
 
