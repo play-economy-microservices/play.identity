@@ -15,6 +15,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using Play.Common.HealthChecks;
 using Play.Common.Logging;
 using Play.Common.MassTransit;
+using Play.Common.OpenTelemetry;
 using Play.Common.Settings;
 using Play.Identity.Service.Entities;
 using Play.Identity.Service.Exceptions;
@@ -79,8 +80,9 @@ namespace Play.Identity.Service
             services.AddHealthChecks()
                     .AddMongoDb(); // Health Check for Mongo Db
 
-            // Seq logging
-            services.AddSeqLogging(Configuration);
+            // Seq logging and Tracing
+            services.AddSeqLogging(Configuration)
+                    .AddTracing(Configuration);
 
             // Configure headers to access gateway
             services.Configure<ForwardedHeadersOptions>(options =>

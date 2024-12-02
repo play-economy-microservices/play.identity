@@ -6,6 +6,7 @@ using Play.Identity.Contracts;
 using Play.Identity.Service.Entities;
 using Play.Identity.Service.Exceptions;
 using Microsoft.Extensions.Logging;
+using ILogger = DnsClient.Internal.ILogger;
 
 namespace Play.Identity.Service.Consumers
 {
@@ -15,9 +16,10 @@ namespace Play.Identity.Service.Consumers
 
         private readonly ILogger<DebitGilConsumer> logger;
 
-        public DebitGilConsumer(UserManager<ApplicationUser> userManager)
+        public DebitGilConsumer(UserManager<ApplicationUser> userManager, ILogger<DebitGilConsumer> logger)
         {
             this.userManager = userManager;
+            this.logger = logger;
         }
 
         public async Task Consume(ConsumeContext<DebitGil> context)
