@@ -71,7 +71,7 @@ jobs:
       ACR_NAME: playeconomyacr
       AZ_RG_NAME: playeconomy
       SERVICE_NAME: identity
-      HELM_CHART_VERSION: 0.1.1
+      HELM_CHART_VERSION: 0.1.2
 
     permissions:
       id-token: write
